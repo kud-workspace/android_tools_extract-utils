@@ -501,6 +501,11 @@ function write_blueprint_packages() {
         fi
         if [ "$CLASS" = "APEX" ]; then
             printf '\tsrc: "%s/apex/%s",\n' "$SRC" "$FILE"
+            if [[ "$ARGS" =~ "OVERRIDES" ]]; then
+                OVERRIDEPKG=${ARGS##*\=}
+                OVERRIDEPKG=${OVERRIDEPKG//,/ }
+                printf '\toverrides: ["%s"],\n' "$OVERRIDEPKG"
+            fi
         fi
         if [ "$CLASS" = "SHARED_LIBRARIES" ] || [ "$CLASS" = "EXECUTABLES" ] || [ "$CLASS" = "APEX" ]; then
             printf '\tprefer: true,\n'
