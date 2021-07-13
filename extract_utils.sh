@@ -445,16 +445,16 @@ function write_blueprint_packages() {
             printf '\tname: "%s",\n' "$PKGNAME"
             printf '\towner: "%s",\n' "$VENDOR"
             printf '\tjars: ["%s/framework/%s"],\n' "$SRC" "$FILE"
-        elif [ "$CLASS" = "ETC" ]; then
+        elif [ "$CLASS" = "ETC" ] || [ "$CLASS" = "APEX" ]; then
             if [ "$EXTENSION" = "xml" ]; then
                 printf 'prebuilt_etc_xml {\n'
+            elif [ "$EXTENSION" = "apex" ]; then
+                printf 'prebuilt_apex {\n'
             else
                 printf 'prebuilt_etc {\n'
             fi
             printf '\tname: "%s",\n' "$PKGNAME"
             printf '\towner: "%s",\n' "$VENDOR"
-            printf '\tsrc: "%s/etc/%s",\n' "$SRC" "$FILE"
-            printf '\tfilename_from_src: true,\n'
         elif [ "$CLASS" = "EXECUTABLES" ]; then
             if [ "$EXTENSION" = "sh" ]; then
                 printf 'sh_binary {\n'
@@ -493,11 +493,16 @@ function write_blueprint_packages() {
             fi
         fi
         if [ "$CLASS" = "ETC" ] ; then
+            printf '\tsrc: "%s/etc/%s",\n' "$SRC" "$FILE"
+            printf '\tfilename_from_src: true,\n'
             if [ "$DIRNAME" != "." ]; then
                 printf '\tsub_dir: "%s",\n' "$DIRNAME"
             fi
         fi
-        if [ "$CLASS" = "SHARED_LIBRARIES" ] || [ "$CLASS" = "EXECUTABLES" ] ; then
+        if [ "$CLASS" = "APEX" ]; then
+            printf '\tsrc: "%s/apex/%s",\n' "$SRC" "$FILE"
+        fi
+        if [ "$CLASS" = "SHARED_LIBRARIES" ] || [ "$CLASS" = "EXECUTABLES" ] || [ "$CLASS" = "APEX" ]; then
             printf '\tprefer: true,\n'
         fi
         if [ "$EXTRA" = "priv-app" ]; then
@@ -909,6 +914,16 @@ function write_product_packages() {
     local SBIN=( $(prefix_match "sbin/") )
     if [ "${#SBIN[@]}" -gt "0" ]; then
         write_makefile_packages "EXECUTABLES" "" "sbin" "SBIN" >> "$ANDROIDMK"
+    fi
+
+    # Apex
+    local APEX=( $(prefix_match "apex/") )
+    if [ "${#APEX[@]}" -gt "0" ]; then
+        write_blueprint_packages "APEX" "" "" "APEX" >> "$ANDROIDBP"
+    fi
+    local S_APEX=( $(prefix_match "system/apex/") )
+    if [ "${#S_APEX[@]}" -gt "0" ]; then
+        write_blueprint_packages "APEX" "system" "" "S_APEX" >> "$ANDROIDBP"
     fi
 
 
