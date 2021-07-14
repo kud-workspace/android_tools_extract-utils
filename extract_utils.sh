@@ -435,6 +435,10 @@ function write_blueprint_packages() {
                         OVERRIDEPKG=${ARG##*\=}
                         OVERRIDEPKG=${OVERRIDEPKG//,/ }
                         printf '\toverrides: ["%s"],\n' "$OVERRIDEPKG"
+                    elif [[ "$ARG" = "NODEXPREOPT" ]]; then
+                        printf '\tdex_preopt: {\n'
+                        printf '\t\tenabled: false,\n'
+                        printf '\t},\n'
                     elif [ ! -z "$ARG" ]; then
                         printf '\tcertificate: "%s",\n' "$ARG"
                     fi
@@ -481,11 +485,6 @@ function write_blueprint_packages() {
             unset EXTENSION
         else
             printf '\tsrcs: ["%s/%s"],\n' "$SRC" "$FILE"
-        fi
-        if [ "$CLASS" = "APPS" ]; then
-            printf '\tdex_preopt: {\n'
-            printf '\t\tenabled: false,\n'
-            printf '\t},\n'
         fi
         if [ "$CLASS" = "SHARED_LIBRARIES" ] || [ "$CLASS" = "EXECUTABLES" ] ; then
             if [ "$DIRNAME" != "." ]; then
@@ -647,9 +646,6 @@ function write_makefile_packages() {
         fi
         printf 'LOCAL_MODULE_TAGS := optional\n'
         printf 'LOCAL_MODULE_CLASS := %s\n' "$CLASS"
-        if [ "$CLASS" = "APPS" ]; then
-            printf 'LOCAL_DEX_PREOPT := false\n'
-        fi
         if [ ! -z "$EXTENSION" ]; then
             printf 'LOCAL_MODULE_SUFFIX := %s\n' "$EXTENSION"
         fi
